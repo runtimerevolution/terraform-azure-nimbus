@@ -13,3 +13,7 @@ output "application_gateway_endpoint" {
 output "container_apps_endpoints" {
   value = var.enable_application ? [for c in module.container_app_environment[0].container_apps : "${c.fqdn}:${c.port}"] : null
 }
+
+output "database_servers_endpoints" {
+  value = length(var.database_servers) > 0 ? [for d in module.databases : d.database_server_fqdn] : null
+}
