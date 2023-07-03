@@ -1,34 +1,46 @@
-resource "azurerm_cdn_profile" "cdn_profile" {
-  name                = "${var.solution_name}-cdn"
-  location            = var.resource_group_location
-  resource_group_name = var.resource_group_name
-  sku                 = "Standard_Microsoft"
+locals {
+  static_website_origin = var.enable_static_website ? {
+    sa = {
+      name                = "sa"
+      host_name           = var.storage_account_web_host
+      forwarding_protocol = "HttpsOnly"
+      patterns_to_match   = ["/*"]
+    }
+  } : {}
+
+  application_gateway_origin = var.enable_application ? {
+    ag = {
+      name                = "ag"
+      host_name           = var.application_gateway_public_ip_address
+      forwarding_protocol = "HttpOnly"
+      patterns_to_match   = var.cdn_application_patterns_to_match
+    }
+  } : {}
+
+  origins = merge(local.static_website_origin, local.application_gateway_origin)
 }
 
-resource "azurerm_cdn_endpoint" "endpoint" {
-  name                = "${var.solution_name}-endpoint"
-  profile_name        = azurerm_cdn_profile.cdn_profile.name
-  location            = var.resource_group_location
+resource "azurerm_cdn_frontdoor_profile" "frontdoor" {
+  name                = "${var.solution_name}-frontdoor"
   resource_group_name = var.resource_group_name
-  origin_host_header  = var.storage_account_web_host
+  sku_name            = "Standard_AzureFrontDoor"
+}
 
-  origin {
-    name      = "sa"
-    host_name = var.storage_account_web_host
-  }
+resource "azurerm_cdn_frontdoor_endpoint" "endpoint" {
+  name                     = "${var.solution_name}-frontdoor-endpoint"
+  cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.frontdoor.id
+}
 
-  delivery_rule {
-    name  = "EnforceHTTPS"
-    order = "1"
+module "route" {
+  for_each = local.origins
 
-    request_scheme_condition {
-      operator     = "Equal"
-      match_values = ["HTTP"]
-    }
+  source = "../azure_cdn_route"
 
-    url_redirect_action {
-      redirect_type = "Found"
-      protocol      = "Https"
-    }
-  }
+  solution_name             = var.solution_name
+  origin_name               = each.key
+  cdn_frontdoor_profile_id  = azurerm_cdn_frontdoor_profile.frontdoor.id
+  origin_host_name          = each.value.host_name
+  cdn_frontdoor_endpoint_id = azurerm_cdn_frontdoor_endpoint.endpoint.id
+  route_forwarding_protocol = each.value.forwarding_protocol
+  route_patterns_to_match   = each.value.patterns_to_match
 }
