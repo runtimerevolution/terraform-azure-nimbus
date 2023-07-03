@@ -29,4 +29,5 @@ resource "azurerm_subnet" "private" {
   virtual_network_name = azurerm_virtual_network.vnet.name
   resource_group_name  = var.resource_group_name
   address_prefixes     = [cidrsubnet(var.vnet_cidr, 4, 2)]
+  service_endpoints    = ["Microsoft.Sql"]
 }

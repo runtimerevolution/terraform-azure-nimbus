@@ -44,3 +44,8 @@ variable "server_databases" {
   )
   description = "Databases to deploy."
 }
+
+variable "private_subnet_id" {
+  type        = string
+  description = "Private subnet ID to host the database servers."
+}

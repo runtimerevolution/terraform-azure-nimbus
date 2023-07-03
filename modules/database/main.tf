@@ -7,7 +7,7 @@ resource "azurerm_mssql_server" "server" {
   version                      = var.server_version
 }
 
-resource "azurerm_mssql_database" "test" {
+resource "azurerm_mssql_database" "database" {
   for_each = { for i, db in var.server_databases : i => db }
 
   name                                = coalesce(each.value.name, "${var.server_name}-db-${each.key + 1}")
@@ -19,4 +19,10 @@ resource "azurerm_mssql_database" "test" {
   sku_name                            = coalesce(each.value.sku_name, "Basic")
   storage_account_type                = coalesce(each.value.storage_account_type, "Geo")
   transparent_data_encryption_enabled = coalesce(each.value.transparent_data_encryption_enabled, true)
+}
+
+resource "azurerm_mssql_virtual_network_rule" "server_private_subnet_rule" {
+  name      = "${azurerm_mssql_server.server.name}-private-subnet-rule"
+  server_id = azurerm_mssql_server.server.id
+  subnet_id = var.private_subnet_id
 }

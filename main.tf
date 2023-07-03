@@ -106,4 +106,5 @@ module "databases" {
   server_administrator_login_password = coalesce(each.value.administrator_login_password, "passw0rd?")
   server_version                      = coalesce(each.value.version, "12.0")
   server_databases                    = coalesce(each.value.databases, [{}])
+  private_subnet_id                   = module.network.private_subnet_id
 }

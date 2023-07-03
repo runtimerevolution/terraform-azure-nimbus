@@ -15,7 +15,7 @@ variable "resource_group_location" {
 
 variable "public_subnet_id" {
   type        = string
-  description = "Private subnet ID to host the application gateway."
+  description = "Public subnet ID to host the application gateway."
 }
 
 variable "container_app_environment_static_ip_address" {
