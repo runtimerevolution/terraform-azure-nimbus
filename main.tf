@@ -88,3 +88,22 @@ module "cdn" {
 
   depends_on = [module.application_gateway]
 }
+
+
+# -----------------------------------------------------------------------------
+# Databases
+# -----------------------------------------------------------------------------
+module "databases" {
+  for_each = { for i, ds in var.database_servers : i => ds }
+
+  source = "./modules/database"
+
+  solution_name                       = var.solution_name
+  resource_group_name                 = azurerm_resource_group.resource_group.name
+  resource_group_location             = azurerm_resource_group.resource_group.location
+  server_name                         = coalesce(each.value.name, "${var.solution_name}-db-server-${each.key + 1}")
+  server_administrator_login          = coalesce(each.value.administrator_login, "${var.solution_name}_admin")
+  server_administrator_login_password = coalesce(each.value.administrator_login_password, "passw0rd?")
+  server_version                      = coalesce(each.value.version, "12.0")
+  server_databases                    = coalesce(each.value.databases, [{}])
+}
