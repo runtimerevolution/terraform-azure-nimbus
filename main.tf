@@ -108,3 +108,16 @@ module "databases" {
   server_databases                    = coalesce(each.value.databases, [{}])
   private_subnet_id                   = module.network.private_subnet_id
 }
+
+module "bastion_host" {
+  # count = var.enable_application ? 1 : 0
+
+  source = "./modules/bastion_host"
+
+  solution_name           = var.solution_name
+  resource_group_name     = azurerm_resource_group.resource_group.name
+  resource_group_location = azurerm_resource_group.resource_group.location
+  vnet_name               = module.network.vnet_name
+  vnet_cidr               = var.vnet_cidr
+  public_subnet_id        = module.network.public_subnet_id
+}
