@@ -10,7 +10,7 @@ resource "azurerm_resource_group" "resource_group" {
 # Key Vault to store secrets
 # -----------------------------------------------------------------------------
 module "key_vault" {
-  # count = var.enable_static_website ? 1 : 0
+  count = var.enable_key_vault ? 1 : 0
 
   source = "./modules/key_vault"
 
@@ -120,7 +120,8 @@ module "databases" {
   server_version                      = coalesce(each.value.version, "12.0")
   server_databases                    = coalesce(each.value.databases, [{}])
   private_subnet_id                   = module.network.private_subnet_id
-  key_vault_id                        = module.key_vault.key_vault_id
+  enable_key_vault                    = var.enable_key_vault
+  key_vault_id                        = module.key_vault[0].key_vault_id
 }
 
 module "jump_server" {
@@ -134,5 +135,6 @@ module "jump_server" {
   vnet_name               = module.network.vnet_name
   vnet_cidr               = var.vnet_cidr
   public_subnet_id        = module.network.public_subnet_id
-  key_vault_id            = module.key_vault.key_vault_id
+  enable_key_vault        = var.enable_key_vault
+  key_vault_id            = module.key_vault[0].key_vault_id
 }

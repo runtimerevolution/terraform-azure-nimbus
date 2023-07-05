@@ -101,3 +101,9 @@ variable "enable_jump_server" {
   description = "Enables/disables jump server for establishing a SSH tunnel to access resources in private subnets."
   default     = false
 }
+
+variable "enable_key_vault" {
+  type        = bool
+  description = "Enables/disables key vault to store sensible data as secret."
+  default     = false
+}
