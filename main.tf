@@ -109,10 +109,10 @@ module "databases" {
   private_subnet_id                   = module.network.private_subnet_id
 }
 
-module "bastion_host" {
+module "jump_server" {
   # count = var.enable_application ? 1 : 0
 
-  source = "./modules/bastion_host"
+  source = "./modules/jump_server"
 
   solution_name           = var.solution_name
   resource_group_name     = azurerm_resource_group.resource_group.name

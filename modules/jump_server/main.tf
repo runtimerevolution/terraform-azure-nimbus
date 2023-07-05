@@ -1,38 +1,38 @@
-resource "azurerm_subnet" "bastion_vm" {
-  name                 = "${var.solution_name}-subnet-bastion"
+resource "azurerm_subnet" "jump_server" {
+  name                 = "${var.solution_name}-subnet-jump-server"
   virtual_network_name = var.vnet_name
   resource_group_name  = var.resource_group_name
   address_prefixes     = [cidrsubnet(var.vnet_cidr, 4, 3)]
 }
 
-resource "azurerm_public_ip" "bastion_host" {
-  name                = "${var.solution_name}-bastion-pip"
+resource "azurerm_public_ip" "jump_server" {
+  name                = "${var.solution_name}-jump-server-pip"
   resource_group_name = var.resource_group_name
   location            = var.resource_group_location
   allocation_method   = "Static"
   sku                 = "Standard"
 }
 
-resource "azurerm_network_interface" "bastion" {
-  name                = "${var.solution_name}-nic-bastion"
+resource "azurerm_network_interface" "jump_server" {
+  name                = "${var.solution_name}-nic-jump-server"
   location            = var.resource_group_location
   resource_group_name = var.resource_group_name
 
   ip_configuration {
-    name                          = "bastion-nic"
-    subnet_id                     = azurerm_subnet.bastion_vm.id
+    name                          = "jump-server-nic"
+    subnet_id                     = azurerm_subnet.jump_server.id
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.bastion_host.id
+    public_ip_address_id          = azurerm_public_ip.jump_server.id
   }
 }
 
-resource "azurerm_network_security_group" "bastion" {
-  name                = "${var.solution_name}-bastion-inbound"
+resource "azurerm_network_security_group" "jump_server" {
+  name                = "${var.solution_name}-jump-server-inbound"
   location            = var.resource_group_location
   resource_group_name = var.resource_group_name
 
   security_rule {
-    name                       = "${var.solution_name}-bastion-inbound-rule"
+    name                       = "${var.solution_name}-jump-server-inbound-rule"
     priority                   = 100
     direction                  = "Inbound"
     access                     = "Allow"
@@ -44,13 +44,13 @@ resource "azurerm_network_security_group" "bastion" {
   }
 }
 
-resource "azurerm_network_interface_security_group_association" "example" {
-  network_interface_id      = azurerm_network_interface.bastion.id
-  network_security_group_id = azurerm_network_security_group.bastion.id
+resource "azurerm_network_interface_security_group_association" "jump_server" {
+  network_interface_id      = azurerm_network_interface.jump_server.id
+  network_security_group_id = azurerm_network_security_group.jump_server.id
 }
 
-resource "azurerm_linux_virtual_machine" "bastion" {
-  name                            = "${var.solution_name}-bastion"
+resource "azurerm_linux_virtual_machine" "jump_server" {
+  name                            = "${var.solution_name}-jump-server"
   admin_username                  = "adminuser"
   admin_password                  = "Password123?"
   disable_password_authentication = false
@@ -58,7 +58,7 @@ resource "azurerm_linux_virtual_machine" "bastion" {
   resource_group_name             = var.resource_group_name
   size                            = "Standard_DS1_v2"
 
-  network_interface_ids = [azurerm_network_interface.bastion.id]
+  network_interface_ids = [azurerm_network_interface.jump_server.id]
 
   os_disk {
     caching              = "ReadWrite"
