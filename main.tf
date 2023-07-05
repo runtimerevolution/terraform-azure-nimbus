@@ -7,6 +7,19 @@ resource "azurerm_resource_group" "resource_group" {
 }
 
 # -----------------------------------------------------------------------------
+# Key Vault to store secrets
+# -----------------------------------------------------------------------------
+module "key_vault" {
+  # count = var.enable_static_website ? 1 : 0
+
+  source = "./modules/key_vault"
+
+  solution_name           = var.solution_name
+  resource_group_name     = azurerm_resource_group.resource_group.name
+  resource_group_location = azurerm_resource_group.resource_group.location
+}
+
+# -----------------------------------------------------------------------------
 # Static website
 # -----------------------------------------------------------------------------
 module "static_website" {
@@ -88,7 +101,6 @@ module "cdn" {
 
   depends_on = [module.application_gateway]
 }
-
 
 # -----------------------------------------------------------------------------
 # Databases
