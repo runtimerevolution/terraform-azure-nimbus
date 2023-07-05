@@ -17,3 +17,7 @@ output "container_apps_endpoints" {
 output "database_servers_endpoints" {
   value = length(var.database_servers) > 0 ? [for d in module.databases : d.database_server_fqdn] : null
 }
+
+output "jump_server_endpoint" {
+  value = var.enable_jump_server ? module.jump_server[0].jump_server_public_ip_address : null
+}
