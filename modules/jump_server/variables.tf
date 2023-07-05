@@ -27,3 +27,8 @@ variable "public_subnet_id" {
   type        = string
   description = "Public subnet ID to host the VM."
 }
+
+variable "key_vault_id" {
+  type        = string
+  description = "ID of the key vault to store the SSH private key as a secret."
+}

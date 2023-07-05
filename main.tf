@@ -15,6 +15,7 @@ module "key_vault" {
   source = "./modules/key_vault"
 
   solution_name           = var.solution_name
+  environment             = var.environment
   resource_group_name     = azurerm_resource_group.resource_group.name
   resource_group_location = azurerm_resource_group.resource_group.location
 }
@@ -119,6 +120,7 @@ module "databases" {
   server_version                      = coalesce(each.value.version, "12.0")
   server_databases                    = coalesce(each.value.databases, [{}])
   private_subnet_id                   = module.network.private_subnet_id
+  key_vault_id                        = module.key_vault.key_vault_id
 }
 
 module "jump_server" {
@@ -132,4 +134,5 @@ module "jump_server" {
   vnet_name               = module.network.vnet_name
   vnet_cidr               = var.vnet_cidr
   public_subnet_id        = module.network.public_subnet_id
+  key_vault_id            = module.key_vault.key_vault_id
 }

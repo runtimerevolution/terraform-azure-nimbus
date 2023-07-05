@@ -49,3 +49,8 @@ variable "private_subnet_id" {
   type        = string
   description = "Private subnet ID to host the database servers."
 }
+
+variable "key_vault_id" {
+  type        = string
+  description = "ID of the key vault to store the SSH private key as a secret."
+}
