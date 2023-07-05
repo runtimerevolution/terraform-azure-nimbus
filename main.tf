@@ -110,7 +110,7 @@ module "databases" {
 }
 
 module "jump_server" {
-  # count = var.enable_application ? 1 : 0
+  count = var.enable_jump_server ? 1 : 0
 
   source = "./modules/jump_server"
 
