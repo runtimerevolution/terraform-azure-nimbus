@@ -1,3 +1,6 @@
+# -----------------------------------------------------------------------------
+# Database servers
+# -----------------------------------------------------------------------------
 resource "azurerm_mssql_server" "server" {
   name                         = var.server_name
   resource_group_name          = var.resource_group_name
@@ -5,8 +8,22 @@ resource "azurerm_mssql_server" "server" {
   administrator_login          = var.server_administrator_login
   administrator_login_password = var.server_administrator_login_password
   version                      = var.server_version
+  connection_policy            = "Proxy"
 }
 
+# -----------------------------------------------------------------------------
+# Allow Azure services and resources to access the SQL server
+# -----------------------------------------------------------------------------
+resource "azurerm_mssql_firewall_rule" "server" {
+  name             = "${var.server_name}-allow-azure-rule"
+  server_id        = azurerm_mssql_server.server.id
+  start_ip_address = "0.0.0.0"
+  end_ip_address   = "0.0.0.0"
+}
+
+# -----------------------------------------------------------------------------
+# Databases
+# -----------------------------------------------------------------------------
 resource "azurerm_mssql_database" "database" {
   for_each = { for i, db in var.server_databases : i => db }
 
