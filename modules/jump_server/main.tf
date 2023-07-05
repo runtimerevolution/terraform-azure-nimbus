@@ -49,11 +49,15 @@ resource "azurerm_network_interface_security_group_association" "jump_server" {
   network_security_group_id = azurerm_network_security_group.jump_server.id
 }
 
+
+resource "tls_private_key" "jump_server" {
+  algorithm = "RSA"
+}
+
 resource "azurerm_linux_virtual_machine" "jump_server" {
   name                            = "${var.solution_name}-jump-server"
   admin_username                  = "adminuser"
-  admin_password                  = "Password123?"
-  disable_password_authentication = false
+  disable_password_authentication = true
   location                        = var.resource_group_location
   resource_group_name             = var.resource_group_name
   size                            = "Standard_DS1_v2"
@@ -70,5 +74,10 @@ resource "azurerm_linux_virtual_machine" "jump_server" {
     offer     = "UbuntuServer"
     sku       = "16.04-LTS"
     version   = "latest"
+  }
+
+  admin_ssh_key {
+    username   = "adminuser"
+    public_key = tls_private_key.jump_server.public_key_openssh
   }
 }

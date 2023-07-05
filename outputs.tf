@@ -21,3 +21,8 @@ output "database_servers_endpoints" {
 output "jump_server_endpoint" {
   value = var.enable_jump_server ? module.jump_server[0].jump_server_public_ip_address : null
 }
+
+output "jump_server_ssh_private_key" {
+  value     = var.enable_jump_server ? module.jump_server[0].tls_private_key : null
+  sensitive = true
+}
