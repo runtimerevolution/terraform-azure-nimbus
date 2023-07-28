@@ -37,3 +37,15 @@ variable "cdn_application_patterns_to_match" {
   type        = list(string)
   description = "The path patterns to redirect to the application gateway."
 }
+
+variable "dns_zone_name" {
+  type        = string
+  description = "Domain name"
+  default     = "azure-runtime.pt"
+}
+
+variable "cdn_cname_record_name" {
+  type        = string
+  description = "Subdomain to use"
+  default     = "www"
+}
