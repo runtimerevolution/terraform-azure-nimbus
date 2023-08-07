@@ -7,6 +7,20 @@ resource "azurerm_resource_group" "resource_group" {
 }
 
 # -----------------------------------------------------------------------------
+# Key Vault to store secrets
+# -----------------------------------------------------------------------------
+module "key_vault" {
+  count = var.enable_key_vault ? 1 : 0
+
+  source = "./modules/key_vault"
+
+  solution_name           = var.solution_name
+  environment             = var.environment
+  resource_group_name     = azurerm_resource_group.resource_group.name
+  resource_group_location = azurerm_resource_group.resource_group.location
+}
+
+# -----------------------------------------------------------------------------
 # Static website
 # -----------------------------------------------------------------------------
 module "static_website" {
@@ -87,4 +101,40 @@ module "cdn" {
   cdn_application_patterns_to_match     = var.cdn_application_patterns_to_match
 
   depends_on = [module.application_gateway]
+}
+
+# -----------------------------------------------------------------------------
+# Databases
+# -----------------------------------------------------------------------------
+module "databases" {
+  for_each = { for i, ds in var.database_servers : i => ds }
+
+  source = "./modules/database"
+
+  solution_name                       = var.solution_name
+  resource_group_name                 = azurerm_resource_group.resource_group.name
+  resource_group_location             = azurerm_resource_group.resource_group.location
+  server_name                         = coalesce(each.value.name, "${var.solution_name}-db-server-${each.key + 1}")
+  server_administrator_login          = coalesce(each.value.administrator_login, "${var.solution_name}_admin")
+  server_administrator_login_password = coalesce(each.value.administrator_login_password, "passw0rd?")
+  server_version                      = coalesce(each.value.version, "12.0")
+  server_databases                    = coalesce(each.value.databases, [{}])
+  private_subnet_id                   = module.network.private_subnet_id
+  enable_key_vault                    = var.enable_key_vault
+  key_vault_id                        = module.key_vault[0].key_vault_id
+}
+
+module "jump_server" {
+  count = var.enable_jump_server ? 1 : 0
+
+  source = "./modules/jump_server"
+
+  solution_name           = var.solution_name
+  resource_group_name     = azurerm_resource_group.resource_group.name
+  resource_group_location = azurerm_resource_group.resource_group.location
+  vnet_name               = module.network.vnet_name
+  vnet_cidr               = var.vnet_cidr
+  public_subnet_id        = module.network.public_subnet_id
+  enable_key_vault        = var.enable_key_vault
+  key_vault_id            = module.key_vault[0].key_vault_id
 }

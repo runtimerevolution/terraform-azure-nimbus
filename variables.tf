@@ -69,3 +69,41 @@ variable "containers" {
   description = "Container instances to be deployed."
   default     = []
 }
+
+variable "database_servers" {
+  type = list(
+    object({
+      name                         = optional(string)
+      administrator_login          = optional(string)
+      administrator_login_password = optional(string)
+      version                      = optional(string)
+      databases = optional(
+        list(object({
+          name                                = optional(string)
+          collation                           = optional(string)
+          license_type                        = optional(string)
+          maintenance_configuration_name      = optional(string)
+          max_size_gb                         = optional(number)
+          sku_name                            = optional(string)
+          storage_account_type                = optional(string)
+          transparent_data_encryption_enabled = optional(bool)
+          })
+        )
+      )
+    })
+  )
+  description = "Database servers and instances to deploy."
+  default     = []
+}
+
+variable "enable_jump_server" {
+  type        = bool
+  description = "Enables/disables jump server for establishing a SSH tunnel to access resources in private subnets."
+  default     = false
+}
+
+variable "enable_key_vault" {
+  type        = bool
+  description = "Enables/disables key vault to store sensible data as secret."
+  default     = false
+}
