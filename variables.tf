@@ -107,3 +107,8 @@ variable "enable_key_vault" {
   description = "Enables/disables key vault to store sensible data as secret."
   default     = false
 }
+
+variable "dns_zone_name" {
+  type        = string
+  description = "Domain name"
+}

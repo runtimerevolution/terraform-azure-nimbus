@@ -99,6 +99,7 @@ module "cdn" {
   storage_account_web_host              = var.enable_static_website ? module.static_website[0].storage_account_web_host : null
   application_gateway_public_ip_address = var.enable_application ? module.application_gateway[0].application_gateway_public_ip_address : null
   cdn_application_patterns_to_match     = var.cdn_application_patterns_to_match
+  dns_zone_name                         = var.dns_zone_name
 
   depends_on = [module.application_gateway]
 }

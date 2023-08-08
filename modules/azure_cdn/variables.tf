@@ -41,7 +41,6 @@ variable "cdn_application_patterns_to_match" {
 variable "dns_zone_name" {
   type        = string
   description = "Domain name"
-  default     = "azure-runtime.pt"
 }
 
 variable "cdn_cname_record_name" {
