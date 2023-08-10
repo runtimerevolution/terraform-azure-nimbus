@@ -57,18 +57,13 @@ module "route" {
   route_patterns_to_match   = each.value.patterns_to_match
 }
 
-# Creates an Azure DNS Zone for the domain
-resource "azurerm_dns_zone" "dns_zone" {
-  name                = var.dns_zone_name
-  resource_group_name = var.resource_group_name
-}
-
-# Creates an Azure DNS CNAME record that maps the domain to the Azure CDN endpoint hostname
-# This configuration re-routes the domain traffic to the Azure CDN endpoint
-resource "azurerm_dns_cname_record" "cdn_cname_record" {
-  name                = var.cdn_cname_record_name
-  zone_name           = azurerm_dns_zone.dns_zone.name
-  resource_group_name = azurerm_dns_zone.dns_zone.resource_group_name
-  ttl                 = 300  
-  record              = azurerm_cdn_frontdoor_endpoint.endpoint.host_name   # CDN endpoint hostname
+# Include the DNS configuration if enable_dns is true
+module "dns" {
+  source = "../azure_dns"
+  
+  enable_dns             = var.enable_dns
+  dns_zone_name          = var.dns_zone_name
+  cdn_cname_record_name  = var.cdn_cname_record_name
+  resource_group_name    = var.resource_group_name
+  cdn_frontdoor_endpoint_host_name = azurerm_cdn_frontdoor_endpoint.endpoint.host_name 
 }

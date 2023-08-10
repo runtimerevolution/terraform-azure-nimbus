@@ -38,6 +38,12 @@ variable "cdn_application_patterns_to_match" {
   description = "The path patterns to redirect to the application gateway."
 }
 
+variable "enable_dns" {
+  type        = bool
+  description = "Enables/disables DNS."
+  default     = false
+}
+
 variable "dns_zone_name" {
   type        = string
   description = "Domain name"

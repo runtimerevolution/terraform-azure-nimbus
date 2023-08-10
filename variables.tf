@@ -108,6 +108,12 @@ variable "enable_key_vault" {
   default     = false
 }
 
+variable "enable_dns" {
+  type        = bool
+  description = "Enables/disables DNS."
+  default     = false
+}
+
 variable "dns_zone_name" {
   type        = string
   description = "Domain name"
