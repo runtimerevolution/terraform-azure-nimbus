@@ -1,8 +1,14 @@
+#################################################################################
+#         This section defines and creates an Azure Application Gateway         #
+#################################################################################
+
+# The "locals" block defines reusable variables within the module
 locals {
   backend_address_pool_name      = "${var.solution_name}-beap"
   frontend_ip_configuration_name = "${var.solution_name}-feip"
 }
 
+# Creates a public IP resource for the Application Gateway
 resource "azurerm_public_ip" "app_gateway" {
   name                = "${var.solution_name}-app-gateway-pip"
   resource_group_name = var.resource_group_name
@@ -11,6 +17,7 @@ resource "azurerm_public_ip" "app_gateway" {
   sku                 = "Standard"
 }
 
+# Creates an Azure Application Gateway resource
 resource "azurerm_application_gateway" "app_gateway" {
   name                = "${var.solution_name}-app-gateway"
   resource_group_name = var.resource_group_name
@@ -26,11 +33,13 @@ resource "azurerm_application_gateway" "app_gateway" {
     max_capacity = 10
   }
 
+  # Configures the gateway IP using the public IP
   gateway_ip_configuration {
     name      = "${var.solution_name}-gateway-ip-config"
     subnet_id = var.public_subnet_id
   }
 
+  # Dynamically creates the frontend ports
   dynamic "frontend_port" {
     for_each = var.container_apps
 
@@ -40,16 +49,19 @@ resource "azurerm_application_gateway" "app_gateway" {
     }
   }
 
+  # Configures the frontend IP using the public IP
   frontend_ip_configuration {
     name                 = local.frontend_ip_configuration_name
     public_ip_address_id = azurerm_public_ip.app_gateway.id
   }
 
+  # Configures the backend address pool
   backend_address_pool {
     name         = local.backend_address_pool_name
     ip_addresses = [var.container_app_environment_static_ip_address]
   }
 
+  # Dynamically creates the backend HTTP settings
   dynamic "backend_http_settings" {
     for_each = var.container_apps
 
@@ -65,6 +77,7 @@ resource "azurerm_application_gateway" "app_gateway" {
     }
   }
 
+  # Creates probes for each container application
   dynamic "probe" {
     for_each = var.container_apps
 
@@ -83,6 +96,7 @@ resource "azurerm_application_gateway" "app_gateway" {
     }
   }
 
+  # Creates HTTP listeners for each container application
   dynamic "http_listener" {
     for_each = var.container_apps
 
@@ -94,6 +108,7 @@ resource "azurerm_application_gateway" "app_gateway" {
     }
   }
 
+  # Creates request routing rules for each container application
   dynamic "request_routing_rule" {
     for_each = var.container_apps
 

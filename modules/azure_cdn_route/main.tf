@@ -1,3 +1,8 @@
+#######################################################################################
+#   Defines and configures an Azure CDN Front Door to manage and distribute traffic   #
+#######################################################################################
+
+# Defines an origin group for CDN Front Door
 resource "azurerm_cdn_frontdoor_origin_group" "origin_group" {
   name                     = "${var.solution_name}-origin-group-${var.origin_name}"
   cdn_frontdoor_profile_id = var.cdn_frontdoor_profile_id
@@ -16,6 +21,7 @@ resource "azurerm_cdn_frontdoor_origin_group" "origin_group" {
   }
 }
 
+# Defines an origin for CDN Front Door
 resource "azurerm_cdn_frontdoor_origin" "origin" {
   name                          = "${var.solution_name}-origin-${var.origin_name}"
   cdn_frontdoor_origin_group_id = azurerm_cdn_frontdoor_origin_group.origin_group.id
@@ -30,6 +36,7 @@ resource "azurerm_cdn_frontdoor_origin" "origin" {
   certificate_name_check_enabled = true
 }
 
+# Defines a route for CDN Front Door
 resource "azurerm_cdn_frontdoor_route" "route" {
   name                          = "${var.solution_name}-route-${var.origin_name}"
   cdn_frontdoor_endpoint_id     = var.cdn_frontdoor_endpoint_id

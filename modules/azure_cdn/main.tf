@@ -1,4 +1,11 @@
+###########################################################################################################
+# Defines and creates Azure CDN, Azure Front Door and DNS settings to re-route a domain to the Azure CDN  #
+###########################################################################################################
+
+# The "locals" defines conditional settings for the static website origin and application gateway origin
 locals {
+
+  # Defines the settings for the static website origin 
   static_website_origin = var.enable_static_website ? {
     sa = {
       name                = "sa"
@@ -8,6 +15,7 @@ locals {
     }
   } : {}
 
+  # Defines settings for the application gateway origin 
   application_gateway_origin = var.enable_application ? {
     ag = {
       name                = "ag"
@@ -17,20 +25,24 @@ locals {
     }
   } : {}
 
+  # Merges the static website and application gateway origins to create a combined origins map
   origins = merge(local.static_website_origin, local.application_gateway_origin)
 }
 
+# Creates an Azure Front Door profile for routing traffic to the origins
 resource "azurerm_cdn_frontdoor_profile" "frontdoor" {
   name                = "${var.solution_name}-frontdoor"
   resource_group_name = var.resource_group_name
   sku_name            = "Standard_AzureFrontDoor"
 }
 
+# Creates an Azure Front Door endpoint
 resource "azurerm_cdn_frontdoor_endpoint" "endpoint" {
   name                     = "${var.solution_name}-frontdoor-endpoint"
   cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.frontdoor.id
 }
 
+# Creates routing rules for each origin using the Azure CDN route module
 module "route" {
   for_each = local.origins
 
@@ -45,14 +57,14 @@ module "route" {
   route_patterns_to_match   = each.value.patterns_to_match
 }
 
-# Create an Azure DNS Zone
+# Creates an Azure DNS Zone for the domain
 resource "azurerm_dns_zone" "dns_zone" {
   name                = var.dns_zone_name
   resource_group_name = var.resource_group_name
 }
 
-# Create a CNAME record to map the domain to the CDN Endpoint hostname
-# The domain will be re-routed to the Azure CDN
+# Creates an Azure DNS CNAME record that maps the domain to the Azure CDN endpoint hostname
+# This configuration re-routes the domain traffic to the Azure CDN endpoint
 resource "azurerm_dns_cname_record" "cdn_cname_record" {
   name                = var.cdn_cname_record_name
   zone_name           = azurerm_dns_zone.dns_zone.name
